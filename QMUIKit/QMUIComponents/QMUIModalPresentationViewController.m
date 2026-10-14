@@ -15,6 +15,7 @@
 
 #import "QMUIModalPresentationViewController.h"
 #import "QMUICore.h"
+#import "UIApplication+QMUI.h"
 #import "UIViewController+QMUI.h"
 #import "UIView+QMUI.h"
 #import "QMUIKeyboardManager.h"
@@ -271,7 +272,7 @@
         
         if (self.shownInWindowMode) {
             // 恢复 keyWindow 之前做一下检查，避免这个问题 https://github.com/Tencent/QMUI_iOS/issues/90
-            if (UIApplication.sharedApplication.keyWindow == self.window) {
+            if (UIApplication.sharedApplication.qmui_keyWindow == self.window) {
                 if (self.previousKeyWindow.hidden) {
                     // 保护了这个 issue 记录的情况，避免主 window 丢失 keyWindow https://github.com/Tencent/QMUI_iOS/issues/315
                     [UIApplication.sharedApplication.delegate.window makeKeyWindow];
@@ -505,7 +506,7 @@
     // makeKeyAndVisible 导致的 viewWillAppear: 必定 animated 是 NO 的，所以这里用额外的变量保存这个 animated 的值
     self.appearAnimated = animated;
     self.appearCompletionBlock = completion;
-    self.previousKeyWindow = UIApplication.sharedApplication.keyWindow;
+    self.previousKeyWindow = UIApplication.sharedApplication.qmui_keyWindow;
     if (!self.window) {
         self.window = [[QMUIModalPresentationWindow alloc] init];
         self.window.windowLevel = UIWindowLevelQMUIAlertView;
@@ -751,7 +752,7 @@
 @implementation QMUIModalPresentationViewController (Manager)
 
 + (BOOL)isAnyModalPresentationViewControllerVisible {
-    for (UIWindow *window in UIApplication.sharedApplication.windows) {
+    for (UIWindow *window in UIApplication.sharedApplication.qmui_windows) {
         if ([window isKindOfClass:[QMUIModalPresentationWindow class]] && !window.hidden) {
             return YES;
         }
@@ -763,7 +764,7 @@
     
     BOOL hideAllFinally = YES;
     
-    for (UIWindow *window in UIApplication.sharedApplication.windows) {
+    for (UIWindow *window in UIApplication.sharedApplication.qmui_windows) {
         if (![window isKindOfClass:[QMUIModalPresentationWindow class]]) {
             continue;
         }

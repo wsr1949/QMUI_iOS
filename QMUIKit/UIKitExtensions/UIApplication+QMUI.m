@@ -15,6 +15,23 @@
 #import "UIApplication+QMUI.h"
 #import "QMUICore.h"
 
+static UIWindow *QMUIKeyWindowInWindowScenes(NSSet<UIScene *> *connectedScenes, NSIndexSet *allowedActivationStates) {
+    for (UIScene *scene in connectedScenes) {
+        if (![scene isKindOfClass:[UIWindowScene class]]) {
+            continue;
+        }
+        if (allowedActivationStates && ![allowedActivationStates containsIndex:scene.activationState]) {
+            continue;
+        }
+        for (UIWindow *window in ((UIWindowScene *)scene).windows) {
+            if (window.isKeyWindow) {
+                return window;
+            }
+        }
+    }
+    return nil;
+}
+
 @implementation UIApplication (QMUI)
 
 QMUISynthesizeBOOLProperty(qmui_didFinishLaunching, setQmui_didFinishLaunching)
@@ -43,6 +60,56 @@ QMUISynthesizeBOOLProperty(qmui_didFinishLaunching, setQmui_didFinishLaunching)
 - (void)qmui_handleDidFinishLaunchingNotification:(NSNotification *)notification {
     self.qmui_didFinishLaunching = YES;
     [NSNotificationCenter.defaultCenter removeObserver:self name:UIApplicationDidFinishLaunchingNotification object:nil];
+}
+
+- (UIWindow *)qmui_keyWindow {
+    static NSIndexSet *foregroundActiveStates;
+    static NSIndexSet *foregroundStates;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        foregroundActiveStates = [NSIndexSet indexSetWithIndex:UISceneActivationStateForegroundActive];
+        NSMutableIndexSet *states = [NSMutableIndexSet indexSet];
+        [states addIndex:UISceneActivationStateForegroundInactive];
+        [states addIndex:UISceneActivationStateForegroundActive];
+        foregroundStates = states;
+    });
+    
+    UIWindow *keyWindow = QMUIKeyWindowInWindowScenes(self.connectedScenes, foregroundActiveStates);
+    if (!keyWindow) {
+        keyWindow = QMUIKeyWindowInWindowScenes(self.connectedScenes, foregroundStates);
+    }
+    if (!keyWindow) {
+        keyWindow = QMUIKeyWindowInWindowScenes(self.connectedScenes, nil);
+    }
+#ifndef IOS27_SDK_ALLOWED
+    if (!keyWindow) {
+        BeginIgnoreDeprecatedWarning
+        keyWindow = self.keyWindow;
+        EndIgnoreDeprecatedWarning
+    }
+#endif
+    return keyWindow;
+}
+
+- (NSArray<UIWindow *> *)qmui_windows {
+    NSMutableArray<UIWindow *> *windows = [NSMutableArray array];
+    for (UIScene *scene in self.connectedScenes) {
+        if (![scene isKindOfClass:[UIWindowScene class]]) {
+            continue;
+        }
+        [windows addObjectsFromArray:((UIWindowScene *)scene).windows];
+    }
+    if (windows.count > 0) {
+        return windows;
+    }
+#ifndef IOS27_SDK_ALLOWED
+    BeginIgnoreDeprecatedWarning
+    NSArray<UIWindow *> *legacyWindows = self.windows;
+    EndIgnoreDeprecatedWarning
+    return legacyWindows ?: @[];
+#else
+    return @[];
+#endif
 }
 
 @end

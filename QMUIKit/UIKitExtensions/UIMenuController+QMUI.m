@@ -14,6 +14,7 @@
 
 #import "UIMenuController+QMUI.h"
 #import "QMUICore.h"
+#import "UIApplication+QMUI.h"
 #import "NSArray+QMUI.h"
 
 @implementation UIMenuController (QMUI)
@@ -110,7 +111,7 @@ static UIWindow *kMenuControllerWindow = nil;
     if (kMenuControllerWindow && !kMenuControllerWindow.hidden) {
         return kMenuControllerWindow;
     }
-    [UIApplication.sharedApplication.windows enumerateObjectsUsingBlock:^(__kindof UIWindow * _Nonnull window, NSUInteger idx, BOOL * _Nonnull stop) {
+    [UIApplication.sharedApplication.qmui_windows enumerateObjectsUsingBlock:^(__kindof UIWindow * _Nonnull window, NSUInteger idx, BOOL * _Nonnull stop) {
         NSString *windowString = [NSString stringWithFormat:@"UI%@%@", @"Text", @"EffectsWindow"];
         if ([window isKindOfClass:NSClassFromString(windowString)] && !window.hidden) {
             if (@available(iOS 16.0, *)) {
@@ -136,7 +137,7 @@ static UIWindow *kMenuControllerWindow = nil;
 
 + (UIWindow *)qmuimc_firstResponderWindowExceptMainWindow {
     __block UIWindow *resultWindow = nil;
-    [UIApplication.sharedApplication.windows enumerateObjectsUsingBlock:^(__kindof UIWindow * _Nonnull window, NSUInteger idx, BOOL * _Nonnull stop) {
+    [UIApplication.sharedApplication.qmui_windows enumerateObjectsUsingBlock:^(__kindof UIWindow * _Nonnull window, NSUInteger idx, BOOL * _Nonnull stop) {
         if (window != UIApplication.sharedApplication.delegate.window) {
             UIResponder *responder = [UIMenuController qmuimc_findFirstResponderInView:window];
             if (responder) {

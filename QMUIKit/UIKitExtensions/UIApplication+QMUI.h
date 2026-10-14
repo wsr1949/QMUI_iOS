@@ -20,6 +20,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 判断当前的 App 是否已经完全启动
 @property(nonatomic, assign, readonly) BOOL qmui_didFinishLaunching;
+
+/// 通过 Scene 获取当前 keyWindow，等价于 iOS 27 之前 `UIApplication.keyWindow` 的语义。若找不到则返回 nil。
+@property(nullable, nonatomic, readonly) UIWindow *qmui_keyWindow;
+
+/// 通过 Scene 聚合当前 App 的所有 window，等价于 iOS 27 之前 `UIApplication.windows` 的语义。
+@property(nonatomic, copy, readonly) NSArray<UIWindow *> *qmui_windows;
+
 @end
 
 NS_ASSUME_NONNULL_END

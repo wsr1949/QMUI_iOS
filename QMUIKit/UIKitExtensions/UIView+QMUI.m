@@ -50,7 +50,7 @@ QMUISynthesizeIdCopyProperty(qmui_frameDidChangeBlock, setQmui_frameDidChangeBlo
             if (selfObject == firstArgv && [selfObject conformsToProtocol:@protocol(UITextInput)]) {
                 // 像 QMUIModalPresentationViewController 那种以 window 的形式展示浮层，浮层里的输入框 becomeFirstResponder 的场景，[window makeKeyAndVisible] 被调用后，就会立即走到这里，但此时该 window 尚不是 keyWindow，所以这里延迟到下一个 runloop 里再去判断
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    if (IS_DEBUG && ![selfObject isKindOfClass:[UIWindow class]] && selfObject.window && !selfObject.window.keyWindow) {
+                    if (IS_DEBUG && ![selfObject isKindOfClass:[UIWindow class]] && selfObject.window && !selfObject.window.isKeyWindow) {
                         [selfObject QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow];
                     }
                 });

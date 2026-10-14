@@ -14,6 +14,7 @@
 //
 
 #import "UIWindow+QMUI.h"
+#import "UIApplication+QMUI.h"
 #import "QMUICore.h"
 
 @implementation UIWindow (QMUI)
@@ -98,12 +99,10 @@ static char kAssociatedObjectKey_canResignKeyWindowBlock;
                         result = selfObject.qmui_canBecomeKeyWindow;
                     }
                     
-                    BeginIgnoreDeprecatedWarning
-                    UIWindow *keyWindow = UIApplication.sharedApplication.keyWindow;
+                    UIWindow *keyWindow = UIApplication.sharedApplication.qmui_keyWindow;
                     if (result && keyWindow && keyWindow != selfObject && keyWindow.qmui_canResignKeyWindowBlock) {
                         result = keyWindow.qmui_canResignKeyWindowBlock(keyWindow, selfObject);
                     }
-                    EndIgnoreDeprecatedWarning
                     
                     return result;
                 };

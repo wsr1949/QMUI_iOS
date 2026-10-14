@@ -15,6 +15,7 @@
 
 #import "QMUIKeyboardManager.h"
 #import "QMUICore.h"
+#import "UIApplication+QMUI.h"
 #import "QMUILog.h"
 #import "QMUIAppearance.h"
 #import "QMUIMultipleDelegates.h"
@@ -396,10 +397,10 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 }
 
 - (UIResponder *)firstResponderInWindows {
-    UIResponder *responder = [UIApplication.sharedApplication.keyWindow qmui_findFirstResponder];
+    UIResponder *responder = [UIApplication.sharedApplication.qmui_keyWindow qmui_findFirstResponder];
     if (!responder) {
-        for (UIWindow *window in UIApplication.sharedApplication.windows) {
-            if (window != UIApplication.sharedApplication.keyWindow) {
+        for (UIWindow *window in UIApplication.sharedApplication.qmui_windows) {
+            if (window != UIApplication.sharedApplication.qmui_keyWindow) {
                 responder = [window qmui_findFirstResponder];
                 if (responder) {
                     return responder;
@@ -720,7 +721,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         self.keyboardMoveBeginRect = endFrame;
         
         if (self.currentResponder) {
-            UIWindow *mainWindow = UIApplication.sharedApplication.keyWindow ?: UIApplication.sharedApplication.delegate.window;
+            UIWindow *mainWindow = UIApplication.sharedApplication.qmui_keyWindow ?: UIApplication.sharedApplication.delegate.window;
             if (mainWindow) {
                 CGRect keyboardRect = keyboardMoveUserInfo.endFrame;
                 CGFloat distanceFromBottom = [QMUIKeyboardManager distanceFromMinYToBottomInView:mainWindow keyboardRect:keyboardRect];
@@ -793,7 +794,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         return rect;
     }
     
-    UIWindow *mainWindow = UIApplication.sharedApplication.keyWindow ?: UIApplication.sharedApplication.delegate.window;
+    UIWindow *mainWindow = UIApplication.sharedApplication.qmui_keyWindow ?: UIApplication.sharedApplication.delegate.window;
     if (!mainWindow) {
         if (view) {
             [view convertRect:rect fromView:nil];
@@ -855,7 +856,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
  所以只要找到 UIInputSetHostView 即可，优先从 UIRemoteKeyboardWindow 找，不存在的话则从 UITextEffectsWindow 找。
  */
 + (UIView *)keyboardView {
-    UIView *inputSetHostView = [[UIApplication.sharedApplication.windows qmui_filterWithBlock:^BOOL(__kindof UIWindow * _Nonnull window) {
+    UIView *inputSetHostView = [[UIApplication.sharedApplication.qmui_windows qmui_filterWithBlock:^BOOL(__kindof UIWindow * _Nonnull window) {
         return [NSStringFromClass(window.class) isEqualToString:@"UIRemoteKeyboardWindow"];
     }] qmui_compactMapWithBlock:^id _Nullable(__kindof UIWindow * _Nonnull window) {
         return [self inputSetHostViewInWindow:window];
@@ -863,7 +864,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     
     if (inputSetHostView) return inputSetHostView;
     
-    inputSetHostView = [[UIApplication.sharedApplication.windows qmui_filterWithBlock:^BOOL(__kindof UIWindow * _Nonnull window) {
+    inputSetHostView = [[UIApplication.sharedApplication.qmui_windows qmui_filterWithBlock:^BOOL(__kindof UIWindow * _Nonnull window) {
         return [NSStringFromClass(window.class) isEqualToString:@"UITextEffectsWindow"];
     }] qmui_compactMapWithBlock:^id _Nullable(__kindof UIWindow * _Nonnull window) {
         return [self inputSetHostViewInWindow:window];
@@ -885,14 +886,14 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     UIView *inputSetHostView = [self keyboardView];
     if (inputSetHostView) return inputSetHostView.window;
     
-    UIWindow *window = [UIApplication.sharedApplication.windows qmui_firstMatchWithBlock:^BOOL(__kindof UIWindow * _Nonnull item) {
+    UIWindow *window = [UIApplication.sharedApplication.qmui_windows qmui_firstMatchWithBlock:^BOOL(__kindof UIWindow * _Nonnull item) {
         return [NSStringFromClass(item.class) isEqualToString:@"UIRemoteKeyboardWindow"];
     }];
     if (window) {
         return window;
     }
     
-    window = [UIApplication.sharedApplication.windows qmui_firstMatchWithBlock:^BOOL(__kindof UIWindow * _Nonnull item) {
+    window = [UIApplication.sharedApplication.qmui_windows qmui_firstMatchWithBlock:^BOOL(__kindof UIWindow * _Nonnull item) {
         return [NSStringFromClass(item.class) isEqualToString:@"UITextEffectsWindow"];
     }];
     return window;
